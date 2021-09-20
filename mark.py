@@ -12,10 +12,10 @@ import os
 
 # ist = pytz.timezone('Asia/Kolkata')
 webHook = os.getenv('WEBHOOK')
-
-TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
-TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
-twilio_url = "https://api.twilio.com/2010-04-01/Accounts/" + TWILIO_ACCOUNT_SID + "/Messages.json"
+# are these right?
+# TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
+# TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
+# twilio_url = "https://api.twilio.com/2010-04-01/Accounts/" + TWILIO_ACCOUNT_SID + "/Messages.json"
 submit = re.compile(r'mod\/attendance\/attendance.php\?sessid=(\d{5})&amp;sesskey=(\w{10})')
 sessions = {}
 
@@ -106,13 +106,13 @@ async def loop(schedules):
                 db.update(uid, link, r.status==200, tries+1)
 
                 # whatsapp notif here.
-                data = {
-                     'From': 'whatsapp:+14155238886',
-                     'Body': f'Marked {course}',
-                     'To': f'whatsapp:{whatsapp}'
-                 }
-                await session.post(twilio_url, data=data, auth=(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN))
-                
+                # data = {
+                #     'From': 'whatsapp:+14155238886',
+                #     'Body': f'Marked {course}',
+                #     'To': f'whatsapp:{whatsapp}'
+                # }
+                # await session.post(twilio_url, data=data, auth=(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN))
+                # something like this?
 
                 msg = f"Got <@{disco}>'s `{course}`." if disco else f"Got {username}'s {course}."
                 r2 = await session.post(
@@ -131,13 +131,6 @@ async def loop(schedules):
                     webHook,
                     json={"content": f'{tries+1} fail(s) for <@{disco if disco else username}>\'s {course}'}
                 )
-                # whatsapp notif here.
-                data = {
-                    'From': 'whatsapp:+14155238886',
-                    'Body': f'Failed to Mark {course} :(',
-                    'To': f'whatsapp:{whatsapp}'
-                }
-                await session.post(twilio_url, data=data, auth=(TWILIO_ACCOUNT_SID,TWILIO_AUTH_TOKEN))
         else:
             db.update(uid, link, False, tries+1)
             await session.post(
